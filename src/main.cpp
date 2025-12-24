@@ -2,8 +2,8 @@
 #include <vector>
 #include <random>
 #include <iostream>
-#include "Boid.cpp"
-#include "Predator.cpp"
+#include "boids/boid.h"
+#include "boids/predator/predator.h"
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -104,7 +104,6 @@ void updateFlock(float dt, std::vector<Boid> &flock, Predator &predator, sf::Ren
     stateStr = "FLOCK";
    }
   }
-
   currentFrameForces.push_back(totalForce);
 
   debugData.push_back({totalForce, stateStr});
@@ -143,7 +142,7 @@ int main()
 
  font = sf::Font();
 
- if (!font.openFromFile("roboto.ttf"))
+ if (!font.openFromFile("../roboto.ttf"))
  {
   return -1;
  }

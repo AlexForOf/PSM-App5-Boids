@@ -1,4 +1,4 @@
-#pragma once
+#include "boids/boid.h"
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/ConvexShape.hpp>
@@ -11,18 +11,8 @@
 #include <random>
 #include <iostream>
 
-static const float MAX_FORCE = 0.1f;
-
-static const float SEPARATION_RADIUS = 25.0f;
-static const float ALIGNMENT_RADIUS = 50.0f;
-static const float FEAR_RADIUS = 60.0f;
-static const float SEEK_RADIUS = 350.0f;
-
-class Boid
+Boid::Boid(float x, float y, float speed) : maxSpeed(speed), minSpeed(speed * 0.5)
 {
-public:
- Boid(float x, float y, float speed = 4.0f) : maxSpeed(speed), minSpeed(speed * 0.5)
- {
   position = sf::Vector2f(x, y);
 
   static std::random_device rd;
@@ -49,8 +39,8 @@ public:
   shape.setFillColor(sf::Color::Cyan);
  }
 
- sf::Vector2f separation(const std::vector<Boid> &flock)
- {
+sf::Vector2f Boid::separation(const std::vector<Boid> &flock)
+{
   sf::Vector2f steering = sf::Vector2f(0.0f, 0.0f);
   int count = 0;
 
@@ -78,10 +68,10 @@ public:
    steering /= static_cast<float>(count);
   }
   return steerTowards(steering);
- }
+}
 
- sf::Vector2f alignment(const std::vector<Boid> &flock)
- {
+sf::Vector2f Boid::alignment(const std::vector<Boid> &flock)
+{
   sf::Vector2f steering = sf::Vector2f(0.0f, 0.0f);
   int count = 0;
 
@@ -103,10 +93,10 @@ public:
    steering /= static_cast<float>(count);
   }
   return steerTowards(steering);
- }
+}
 
- sf::Vector2f cohesion(const std::vector<Boid> &flock)
- {
+sf::Vector2f Boid::cohesion(const std::vector<Boid> &flock)
+{
   sf::Vector2f centerOfMass = sf::Vector2f(0.0f, 0.0f);
   int count = 0;
 
@@ -135,7 +125,7 @@ public:
   return steerTowards(desiredDir);
  }
 
- sf::Vector2f flee(const sf::Vector2f &predatorPos)
+ sf::Vector2f Boid::flee(const sf::Vector2f &predatorPos)
  {
   sf::Vector2f diff = position - predatorPos;
   float distanceSqr = diff.lengthSquared();
@@ -150,20 +140,20 @@ public:
   sf::Vector2f steer = diff - velocity;
 
   return steer;
- }
+}
 
- sf::Vector2f seek(const sf::Vector2f &targetPos)
- {
+sf::Vector2f Boid::seek(const sf::Vector2f &targetPos)
+{
   sf::Vector2f diff = targetPos - position;
   float diffLengthSq = diff.lengthSquared();
   if (diffLengthSq < 1.0f || diffLengthSq > SEEK_RADIUS * SEEK_RADIUS)
    return sf::Vector2f(0, 0);
 
   return steerTowards(diff);
- }
+}
 
- void update(float deltaTime, float windowWidth, float windowHeight)
- {
+void Boid::update(float deltaTime, float windowWidth, float windowHeight)
+{
   position += velocity * deltaTime;
 
   if (position.x > windowWidth)
@@ -178,20 +168,20 @@ public:
 
   shape.setPosition(position);
   shape.setRotation(velocity.angle());
- }
+}
 
- void applyForce(sf::Vector2f force)
- {
+void Boid::applyForce(sf::Vector2f force)
+{
   this->velocity += force;
- }
+}
 
- void draw(sf::RenderWindow &window)
- {
+void Boid::draw(sf::RenderWindow &window)
+{
   window.draw(shape);
- }
+}
 
- void drawDebug(sf::RenderWindow &window, const sf::Font &font, sf::Vector2f currentForce, std::string stateText)
- {
+void Boid::drawDebug(sf::RenderWindow &window, const sf::Font &font, sf::Vector2f currentForce, std::string stateText)
+{
   float lineScale = 150.0f;
   sf::Vector2f lineEnd = position + (currentForce * lineScale);
 
@@ -214,25 +204,17 @@ public:
 
   std::cout << "text position" << text.getPosition().x << " " << text.getPosition().y;
   window.draw(text);
- }
+}
 
- sf::Vector2f getPosition() const
- {
+sf::Vector2f Boid::getPosition() const
+{
   return position;
- }
+}
 
-protected:
- float maxSpeed;
- float minSpeed;
- sf::Vector2f position;
- sf::Vector2f velocity;
-
- sf::ConvexShape shape;
-
- sf::Vector2f steerTowards(sf::Vector2f targetVector)
- {
+sf::Vector2f Boid::steerTowards(sf::Vector2f targetVector)
+{
   if (targetVector.lengthSquared() < 0.001f)
-   return sf::Vector2f(0, 0);
+    return sf::Vector2f(0, 0);
 
   sf::Vector2f desired = targetVector.normalized() * maxSpeed;
 
@@ -244,5 +226,4 @@ protected:
   }
 
   return steer;
- }
-};
+}

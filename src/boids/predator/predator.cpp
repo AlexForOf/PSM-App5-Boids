@@ -1,19 +1,17 @@
-#include "Boid.cpp"
+#include "boids/boid.h"
+#include "boids/predator/predator.h"
 #include <limits>
+#include <random>
+#include <iostream>
 
-static const float HUNT_DISTANCE = 300.0f;
-
-class Predator : public Boid
-{
-public:
- Predator(float x, float y) : Boid(x, y, 5.0f)
+Predator::Predator(float x, float y) : Boid(x, y, 5.0f)
  {
   shape.setFillColor(sf::Color::Red);
   shape.setScale(sf::Vector2f(2.0f, 2.0f));
  }
 
- sf::Vector2f hunt(const std::vector<Boid> &flock)
- {
+sf::Vector2f Predator::hunt(const std::vector<Boid> &flock)
+{
   float closestDistSqr = std::numeric_limits<float>::max();
   sf::Vector2f targetVector = sf::Vector2f(0, 0);
   bool foundPrey = false;
@@ -39,11 +37,10 @@ public:
   {
    return getWanderForce();
   }
- }
+}
 
-private:
- sf::Vector2f getWanderForce()
- {
+sf::Vector2f Predator::getWanderForce()
+{
   static std::random_device rd;
   static std::mt19937 gen(rd());
   std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
@@ -54,5 +51,4 @@ private:
    return randomDir.normalized() * (maxSpeed * 0.5f);
 
   return sf::Vector2f(0, 0);
- }
-};
+}
