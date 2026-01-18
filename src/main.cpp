@@ -9,9 +9,6 @@ const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 const int BOID_COUNT = 500;
 
-static bool debugMode = false;
-static sf::Font font;
-
 std::vector<Boid> spawnFlock(int count)
 {
  std::vector<Boid> flock;
@@ -57,15 +54,6 @@ void updateFlock(float dt, std::vector<Boid> &flock, Predator &predator, sf::Ren
  sf::Vector2f predatorForce = predator.hunt(flock);
  sf::Vector2f totalForce;
 
- struct DebugInfo
- {
-  sf::Vector2f force;
-  std::string state;
- };
-
- std::vector<DebugInfo> debugData;
- debugData.reserve(flock.size());
-
  int index = 0;
  for (auto &boid : flock)
  {
@@ -87,7 +75,8 @@ void updateFlock(float dt, std::vector<Boid> &flock, Predator &predator, sf::Ren
    sf::Vector2f coh = boid.cohesion(flock);
 
    bool isMouseDown = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
-   sf::Vector2i mousePointInt = sf::Mouse::getPosition(window);
+   sf::Vector2f worldCoords = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+   sf::Vector2i mousePointInt(static_cast<int>(worldCoords.x), static_cast<int>(worldCoords.y));
 
    if (isMouseDown && mousePointInt.x >= 0 && mousePointInt.x <= WINDOW_WIDTH && mousePointInt.y >= 0 && mousePointInt.y <= WINDOW_HEIGHT)
    {
@@ -105,8 +94,6 @@ void updateFlock(float dt, std::vector<Boid> &flock, Predator &predator, sf::Ren
    }
   }
   currentFrameForces.push_back(totalForce);
-
-  debugData.push_back({totalForce, stateStr});
   index++;
  }
 
@@ -118,12 +105,6 @@ void updateFlock(float dt, std::vector<Boid> &flock, Predator &predator, sf::Ren
   flock[i].applyForce(currentFrameForces[i]);
 
   flock[i].update(dt, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-  if (debugMode)
-  {
-   std::cout << "Debug drawn" << std::endl;
-   flock[i].drawDebug(window, font, debugData[i].force, debugData[i].state);
-  }
  }
 }
 
@@ -140,15 +121,6 @@ int main()
  sf::RenderWindow window(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), "Boid Simulation");
  window.setFramerateLimit(60);
 
- font = sf::Font();
-
- if (!font.openFromFile("../roboto.ttf"))
- {
-  return -1;
- }
-
- std::cout << font.getInfo().family;
-
  sf::Clock clock;
  std::vector<Boid> flock = spawnFlock(BOID_COUNT);
  Predator predator(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
@@ -160,14 +132,6 @@ int main()
    if (event->is<sf::Event::Closed>())
    {
     window.close();
-   }
-
-   if (event->is<sf::Event::KeyPressed>())
-   {
-    if (event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::D)
-    {
-     debugMode = !debugMode;
-    }
    }
   }
 
